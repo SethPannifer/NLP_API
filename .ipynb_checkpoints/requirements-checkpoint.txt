@@ -1,0 +1,16 @@
+fastapi
+tabulate
+datetime
+
+pandas
+numpy
+matplotlib
+seaborn
+scikit-learn
+torch
+transformers
+datasets
+tabulate
+pickle-mixin
+argparse
+
