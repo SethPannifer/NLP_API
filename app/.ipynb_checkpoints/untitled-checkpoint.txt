@@ -1,0 +1,15 @@
+
+export PYTHON_ENV="development"
+export API_PORT=8080
+export WORKERS=10
+export TIMEOUT=300
+export LOG_FOLDER=/var/log/ml-project1
+
+docker run -d \
+  --rm \
+  -p ${API_PORT}:80 \
+  -e "WORKERS=${WORKERS}" \
+  -e "TIMEOUT=${TIMEOUT}" \
+  -e "PYTHON_ENV=${PYTHON_ENV}" \
+  --name="${JOB_NAME}" \
+  ${IMAGE}:${TAG}
