@@ -111,7 +111,7 @@ async def read_item(request:Request, input_text: str = Form(...)):
 @app.get("/train")
 async def run_train_bash():
     try:
-        result = subprocess.check_output(["bash", "./train.sh"], stderr=subprocess.STDOUT)
+        result = subprocess.check_output(["bash", "../train.sh"], stderr=subprocess.STDOUT)
         return {"output": result.decode("utf-8")}
     except subprocess.CalledProcessError as e:
         return {"error": e.output.decode("utf-8")}
@@ -119,7 +119,7 @@ async def run_train_bash():
 @app.get("/CICD")
 async def run_CICD_bash():
     try:
-        result = subprocess.check_output(["bash", "./train.sh"], stderr=subprocess.STDOUT)
+        result = subprocess.check_output(["bash", "../CICD.sh"], stderr=subprocess.STDOUT)
         return {"output": result.decode("utf-8")}
     except subprocess.CalledProcessError as e:
         return {"error": e.output.decode("utf-8")}
