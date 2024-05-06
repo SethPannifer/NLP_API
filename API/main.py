@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request, Form, Response
+import subprocess
 import numpy as np
 import json
 import pickle
@@ -77,19 +78,8 @@ class NERtask:
         return Results_Dataframe, total_time
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-
-@app.get("/")
-async def root():
-    LR_model_file = 'LR_NERtask_model.sav'
-    Input_Text_1 = "His Body Mass Index (BMI) is terribly high"
-    
-    ner = NERtask(LR_model_file)
-
-    return ner.predict(Input_Text_1)
-
+LR_model_file = 'LR_NERtask_model.sav'
+ner = NERtask(LR_model_file)
 templates = Jinja2Templates(directory="templates")
 
 
@@ -118,11 +108,22 @@ async def read_item(request:Request, input_text: str = Form(...)):
 
     return Response(content=json.dumps(str(to_write)), media_type="application/json")
 
+@app.get("/train")
+async def run_train_bash():
+    try:
+        result = subprocess.check_output(["bash", "./train.sh"], stderr=subprocess.STDOUT)
+        return {"output": result.decode("utf-8")}
+    except subprocess.CalledProcessError as e:
+        return {"error": e.output.decode("utf-8")}
 
-
-
-if __name__ == '__main__':
-    # server api
-    uvicorn.run("main:app", host="0.0.0.0", port=8080,
-                reload=True, debug=True, log_config="log.ini"
-                )
+@app.get("/CICD")
+async def run_CICD_bash():
+    try:
+        result = subprocess.check_output(["bash", "./train.sh"], stderr=subprocess.STDOUT)
+        return {"output": result.decode("utf-8")}
+    except subprocess.CalledProcessError as e:
+        return {"error": e.output.decode("utf-8")}
+    
+@app.get("/Hello")
+async def hello():
+    return "congrats on finding our hello world: Error 404"
