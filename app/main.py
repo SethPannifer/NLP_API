@@ -78,15 +78,28 @@ class NERtask:
         return Results_Dataframe, total_time
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
-LR_model_file = 'LR_NERtask_model.sav'
+LR_model_file = 'app/LR_NERtask_model.sav'
 ner = NERtask(LR_model_file)
 templates = Jinja2Templates(directory="templates")
 
 
+@app.get("/nlp")
+async def root():
+    LR_model_file = 'app/LR_NERtask_model.sav'
+    Input_Text_1 = "His Body Mass Index (BMI) is terribly high"
+
+    ner = NERtask(LR_model_file)
+
+    return ner.predict(Input_Text_1)
+
+@app.get("/")
+async def root():
+    return {"NLP":"CloudAPI"}
+    
 @app.post("/run", response_class=HTMLResponse)
 async def read_item(request:Request, input_text: str = Form(...)):
 
-    LR_model_file = 'LR_NERtask_model.sav'
+    LR_model_file = 'app/LR_NERtask_model.sav'
     Input_Text_1 = input_text 
     ner = NERtask(LR_model_file)
     data_test,time_taken = ner.predict(Input_Text_1)

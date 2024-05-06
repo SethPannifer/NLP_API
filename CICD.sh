@@ -2,7 +2,7 @@ export JOB_NAME="ml-project1"
 export IMAGE="dockjag/fnlp"
 export TAG="latest"
 export PYTHON_ENV="development"
-export API_PORT=8080
+export API_PORT=80
 export WORKERS=10
 export TIMEOUT=300
 export LOG_FOLDER=/var/log/ml-project1
@@ -22,7 +22,7 @@ fi
 
 docker image build --compress -t ${IMAGE}:${TAG} .
 
-# docker push ${IMAGE}:${TAG}
+docker push ${IMAGE}:${TAG}
 
 docker run -d \
   --rm \

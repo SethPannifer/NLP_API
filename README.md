@@ -8,10 +8,11 @@ Run sudo sh train.sh for updating model
 
 ## Docs for API
 
-/\
-/run\
-/train\
-/cicd\
-/train\
-/Hello
+/ Root API\
+/nlp Test API\
+/run Inference API\
+/train Train API\
+/cicd Code API\
+/train Data API\
+/Hello Easter EGG
 
