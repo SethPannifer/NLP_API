@@ -106,13 +106,6 @@ async def read_item(request:Request, input_text: str = Form(...)):
     data = {"title": "Run endpoint", "content1": to_write[0], "content2": to_write[1], "content3": to_write[2], "content4": to_write[3]}
     
 
-<<<<<<< HEAD:app/main.py
-# if __name__ == '__main__':
-#     # server api
-#     uvicorn.run("main:app", host="0.0.0.0", port=8080,
-#                 reload=True, debug=True, log_config="log.ini"
-#                 )
-=======
     return Response(content=json.dumps(str(to_write)), media_type="application/json")
 
 @app.get("/train")
@@ -134,4 +127,3 @@ async def run_CICD_bash():
 @app.get("/Hello")
 async def hello():
     return "congrats on finding our hello world: Error 404"
->>>>>>> 2e0080ff4ad48be9112c8b8e8e453f8f46d64c60:API/main.py
