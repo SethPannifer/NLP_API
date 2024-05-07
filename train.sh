@@ -32,4 +32,3 @@ docker run -it \
   --name="${JOB_NAME}" \
   ${IMAGE}:${TAG} \
   python app/Train_Model.py --s 100 --n Test --d surrey-nlp/PLOD-CW
-

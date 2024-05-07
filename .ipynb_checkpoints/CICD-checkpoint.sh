@@ -3,7 +3,7 @@ export IMAGE="dockjag/fastnlp"
 export TAG="latest"
 export PYTHON_ENV="development"
 export API_PORT=80
-export WORKERS=10
+export WORKERS=12
 export TIMEOUT=300
 export LOG_FOLDER=/var/log/ml-project1
 
@@ -18,7 +18,6 @@ echo ${IMAGE}:${TAG}
 if [ ! -d ${LOG_FOLDER} ]; then
      mkdir ${LOG_FOLDER}
 fi
-
 
 docker image build --compress -t ${IMAGE}:${TAG} .
 
