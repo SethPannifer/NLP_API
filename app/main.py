@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Form, Response
+from fastapi import FastAPI, Request, Form
 import subprocess
 import numpy as np
 import json
@@ -13,7 +13,6 @@ from collections import Counter
 from transformers import AutoModelForTokenClassification, AutoTokenizer
 
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 
 from datetime import datetime
 
@@ -80,16 +79,11 @@ class NERtask:
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
 LR_model_file = 'app/LR_NERtask_model.sav'
 ner = NERtask(LR_model_file)
-templates = Jinja2Templates(directory="templates")
 
 
-@app.get("/nlp")
-async def root():
-    LR_model_file = 'app/LR_NERtask_model.sav'
+@app.get("/test")
+async def test():
     Input_Text_1 = "His Body Mass Index (BMI) is terribly high"
-
-    ner = NERtask(LR_model_file)
-
     return ner.predict(Input_Text_1)
 
 @app.get("/")
@@ -99,13 +93,8 @@ async def root():
 @app.post("/run", response_class=HTMLResponse)
 async def read_item(request:Request, input_text: str = Form(...)):
 
-    LR_model_file = 'app/LR_NERtask_model.sav'
     Input_Text_1 = input_text 
-    ner = NERtask(LR_model_file)
     data_test,time_taken = ner.predict(Input_Text_1)
-
-
-    
     current_date = datetime.now()
 
     to_write = [data_test.iloc[0].tolist(), data_test.iloc[1].tolist(), time_taken, current_date]
@@ -118,24 +107,8 @@ async def read_item(request:Request, input_text: str = Form(...)):
 
     data = {"title": "Run endpoint", "content1": to_write[0], "content2": to_write[1], "content3": to_write[2], "content4": to_write[3]}
     
+    return json.dumps(str(to_write))
 
-    return Response(content=json.dumps(str(to_write)), media_type="application/json")
-
-@app.get("/train")
-async def run_train_bash():
-    try:
-        result = subprocess.check_output(["bash", "../train.sh"], stderr=subprocess.STDOUT)
-        return {"output": result.decode("utf-8")}
-    except subprocess.CalledProcessError as e:
-        return {"error": e.output.decode("utf-8")}
-
-@app.get("/CICD")
-async def run_CICD_bash():
-    try:
-        result = subprocess.check_output(["bash", "../CICD.sh"], stderr=subprocess.STDOUT)
-        return {"output": result.decode("utf-8")}
-    except subprocess.CalledProcessError as e:
-        return {"error": e.output.decode("utf-8")}
     
 @app.get("/Hello")
 async def hello():

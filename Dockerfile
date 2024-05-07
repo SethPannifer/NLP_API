@@ -4,11 +4,12 @@ WORKDIR /code
 
 COPY ./requirements.txt /code/requirements.txt
 
-# RUN pip install -U pip setuptools wheel
-# RUN pip install -U spacy
+RUN pip install -U pip setuptools wheel
+RUN pip install -U spacy
+RUN python -m spacy download en_core_web_sm
 # RUN pip install Cython==0.29.36
 # RUN pip install spacy==3.0.6 --no-build-isolation
-# RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
 COPY ./app /code/app
 

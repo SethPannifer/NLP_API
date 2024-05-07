@@ -22,10 +22,11 @@ fi
 
 docker image build --compress -t ${IMAGE}:${TAG} .
 
-docker push ${IMAGE}:${TAG}
+# docker push ${IMAGE}:${TAG}
 
-docker run -d \
+docker run -it \
   --rm \
+  --gpus all \
   -p ${API_PORT}:80 \
   -e "WORKERS=${WORKERS}" \
   -e "TIMEOUT=${TIMEOUT}" \

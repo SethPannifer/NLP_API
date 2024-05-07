@@ -20,7 +20,7 @@ if [ ! -d ${LOG_FOLDER} ]; then
 fi
 
 
-docker image build --compress -t ${IMAGE}:${TAG} .
+# docker image build --compress -t ${IMAGE}:${TAG} .
 
 # docker push ${IMAGE}:${TAG}
 
