@@ -33,3 +33,6 @@ docker run -it -p 80:80 dockjag/fastnlp:latest
 
 ### Train 
 sh train.sh
+
+### Root Welcome API
+localhost/

@@ -16,15 +16,15 @@ from transformers import AutoTokenizer
 from transformers import AutoModelForTokenClassification
 import transformers
 import torch
+import os
 
-# Device selection
+#Device selection
 if torch.cuda.is_available():
         device = torch.device("cuda")
 elif torch.backends.mps.is_available():
         device = torch.device("mps")
 else:
         device = torch.device("cpu")
-
 print("Computing device:",device)
 
 def _parser():
@@ -38,6 +38,9 @@ def _parser():
 class TrainModel:
     def __init__(self,subset):
         self.data_subset = subset
+        self.result_dir = 'Training_Results'
+        if not os.path.exists(self.result_dir):
+            os.makedirs(self.result_dir)
     #Load Sequence Evaluation Metric
     def calculate_results(self, y_true, y_pred):
         metric = load_metric("seqeval", trust_remote_code=True)
@@ -55,7 +58,11 @@ class TrainModel:
                         metric_results['overall_f1'], 
                         metric_results['overall_accuracy']],
                         index=['Overall Precision','Overall Recall','Overall F1','Overall Accuracy'])
-        print(tabulate(df, tablefmt='psql'))
+        #save results
+        with open(f'{self.result_dir}/classification_report_{time.strftime("%Y%m%d-%H%M")}.txt', 'w') as f:
+            f.write(f"\nClassification Report\n")
+            f.write(classification_report(y_true, y_pred))
+            f.write(tabulate(df, headers='keys', tablefmt='psql'))
         return metric_results
 
     #Confusion Matrix Function obtained from https://github.com/surrey-nlp/PLOD-AbbreviationDetection/blob/main/nbs/fine_tuning_abbr_det.ipynb
@@ -85,6 +92,7 @@ class TrainModel:
         plt.title(f'Confusion Matrix for {name}')
         #Use seaborn heatmap to plot the confusion matrix
         sns.heatmap(cm, cmap= "YlGnBu", annot=annot, fmt='', ax=ax).figure
+        plt.savefig(f'{self.result_dir}/{name}_CM_{time.strftime("%Y%m%d-%H%M")}.png')
 
     def plot_roc(self, y_true, y_prob, name):
         #Use Label Binarizer to binarize the labels so it can be used in the roc_curve function
@@ -100,41 +108,7 @@ class TrainModel:
         plt.ylabel('True Positive Rate')
         plt.title(f'ROC Curve with AUC for {name}')
         plt.legend(loc='lower right')
-        plt.show()
-
-    #The function below is used to create a barplot comparison of performance metrics for different methods (specific class)
-    def plot_comparison(self, method_list, method_names, class_name, ylim=(0,1)):
-        Precision = [method[class_name]['precision'] for method in method_list]
-        Recall = [method[class_name]['recall'] for method in method_list]
-        F1 = [method[class_name]['f1'] for method in method_list]
-        print(Precision)
-        df = pd.DataFrame({f'{class_name.upper()} Precision': Precision, f'{class_name.upper()} Recall': Recall, f'{class_name.upper()} F1': F1}, index=method_names)
-        print(tabulate(df, headers='keys', tablefmt='psql'))
-        ax = df.plot(kind='bar', figsize=(10, 5), colormap='viridis')
-        ax.set_xlabel('Methods')
-        ax.set_ylabel('Performance Score')
-        ax.xaxis.set_tick_params(rotation=0)
-        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-        ax.set_title(f'{class_name.upper()} Result Comparison for Different Methods')
-        ax.set_ylim(ylim)
-        plt.show()
-
-    #The function below is used to create a barplot comparison of performance metrics for different methods (overall)
-    def plot_overall_comparison(self, method_list, method_names, ylim=(0,1)):
-        Precision = [method['overall_precision'] for method in method_list]
-        Recall = [method['overall_recall'] for method in method_list]
-        F1 = [method['overall_f1'] for method in method_list]
-        Accuracy = [method['overall_accuracy'] for method in method_list]
-        df = pd.DataFrame({'Overall Precision': Precision, 'Overall Recall': Recall, 'Overall F1': F1, 'Overall Accuracy': Accuracy}, index=method_names)
-        print(tabulate(df, headers='keys', tablefmt='psql'))
-        ax = df.plot(kind='bar', figsize=(10, 5), colormap='viridis')
-        ax.set_xlabel('Methods')
-        ax.set_ylabel('Performance Score')
-        ax.set_ylim(ylim)
-        ax.xaxis.set_tick_params(rotation=0)
-        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-        ax.set_title('Overall Result Comparison for Different Methods')
-        plt.show()
+        plt.savefig(f'{self.result_dir}/{name}_ROC_{time.strftime("%Y%m%d-%H%M")}.png')
 
     #Tokenization code obtained from https://github.com/surrey-nlp/NLP-2024/blob/main/lab06/BERT-finetuning.ipynb 
     def tokenize_and_align_labels(self,short_dataset, list_name):
@@ -197,12 +171,12 @@ class TrainModel:
         tokenized_test_datasets = self.tokenize_and_align_labels(test_dataset, test_label_list)
 
         #Initialize the model with the pretrained model check point
-        RobBERTa_model = AutoModelForTokenClassification.from_pretrained("surrey-nlp/roberta-large-finetuned-abbr", num_labels=5)
+        RobBERTa_model = AutoModelForTokenClassification.from_pretrained("surrey-nlp/roberta-large-finetuned-abbr", num_labels=5, device_map=device)
         #Set the classifier to Identity to get the word embeddings
         RobBERTa_model.classifier = torch.nn.Identity()
         print('Performing Vectorization...')
-        train_vec_tokens = [RobBERTa_model(torch.tensor(row).unsqueeze(0)).logits.detach().squeeze().numpy() for row in tokenized_datasets['input_ids']]
-        test_vec_tokens = [RobBERTa_model(torch.tensor(row).unsqueeze(0)).logits.detach().squeeze().numpy() for row in tokenized_test_datasets['input_ids']]
+        train_vec_tokens = [RobBERTa_model(torch.tensor(row).unsqueeze(0).to(device)).logits.detach().squeeze().cpu().numpy() for row in tokenized_datasets['input_ids']]
+        test_vec_tokens = [RobBERTa_model(torch.tensor(row).unsqueeze(0).to(device)).logits.detach().squeeze().cpu().numpy() for row in tokenized_test_datasets['input_ids']]
         reverse_label_encoding = {0: "B-O", 1: "B-AC", 2: "B-LF", 3: "I-LF", -100: "Unknown"}
         flatten_train_vec_tokens = [item for sublist in train_vec_tokens for item in sublist]
         flatten_test_vec_tokens = [item for sublist in test_vec_tokens for item in sublist]
@@ -233,7 +207,7 @@ class TrainModel:
         results = self.calculate_results(test_labels, predictions)
         self.plot_cm(test_labels, predictions, name=input_name)
         self.plot_roc(test_labels, pred_prob, input_name)
-        filename = f'app/LR_{input_name}_model.sav'
+        filename = f'LR_{input_name}_model.sav'
         pickle.dump(model, open(filename, 'wb'))
         return results, filename
 

@@ -39,7 +39,7 @@ class NERtask:
         #Load RoBERTa model
         print('Loading Vectorization Model')
         model_checkpoint = "surrey-nlp/roberta-large-finetuned-abbr"
-        self.RobBERTa_model = AutoModelForTokenClassification.from_pretrained(model_checkpoint, num_labels=5)
+        self.RobBERTa_model = AutoModelForTokenClassification.from_pretrained(model_checkpoint, num_labels=5, device_map=device)
         self.RobBERTa_model.classifier = torch.nn.Identity()
         self.tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
         print(f'Took {time.time() - start_time:.2f} seconds to load Models')
@@ -51,7 +51,7 @@ class NERtask:
     
     def Vectorize(self, tokens):
         tokenized_input = self.tokenizer(tokens, is_split_into_words=True, truncation=True)
-        vec_tokens = self.RobBERTa_model(torch.tensor(tokenized_input['input_ids']).unsqueeze(0)).logits.detach().squeeze().numpy()
+        vec_tokens = self.RobBERTa_model(torch.tensor(tokenized_input['input_ids']).unsqueeze(0).to(device)).logits.detach().squeeze().cpu().numpy()
         token_positions = tokenized_input.word_ids(batch_index=0)
         return vec_tokens, token_positions
 
@@ -61,7 +61,7 @@ class NERtask:
         tokens = self.Tokenize(input)
         vec_tokens, token_positions = self.Vectorize(tokens)
         results = self.LRModel.predict(vec_tokens[1:-1]) #We remove the CLS and SEP tokens from the prediction
-        
+        print(f'Vectorization Time {time.time() - start_time:.2f} seconds')
         #Map Predictions to their respective positions
         position_label_map = dict()
         for pos, token in zip(token_positions[1:-1], results):
