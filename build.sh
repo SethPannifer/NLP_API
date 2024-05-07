@@ -20,16 +20,8 @@ if [ ! -d ${LOG_FOLDER} ]; then
 fi
 
 
-# docker image build --compress -t ${IMAGE}:${TAG} .
+docker image build --compress -t ${IMAGE}:${TAG} .
 
-# docker push ${IMAGE}:${TAG}
+docker push ${IMAGE}:${TAG}
 
-docker run -it \
-  --rm \
-  --gpus all \
-  -e "WORKERS=${WORKERS}" \
-  -e "PYTHON_ENV=${PYTHON_ENV}" \
-  --name="${JOB_NAME}" \
-  ${IMAGE}:${TAG} \
-  python app/Train_Model.py --s 100 --n Test --d surrey-nlp/PLOD-CW
 

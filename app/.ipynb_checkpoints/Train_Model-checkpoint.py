@@ -17,6 +17,15 @@ from transformers import AutoModelForTokenClassification
 import transformers
 import torch
 
+# Device selection
+if torch.cuda.is_available():
+        device = torch.device("cuda")
+elif torch.backends.mps.is_available():
+        device = torch.device("mps")
+else:
+        device = torch.device("cpu")
+
+print("Computing device:",device)
 
 def _parser():
     parser = argparse.ArgumentParser(description='Train Model for Named Entity Recognition Task')

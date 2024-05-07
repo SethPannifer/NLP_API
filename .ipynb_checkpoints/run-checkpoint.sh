@@ -1,5 +1,5 @@
 export JOB_NAME="ml-project1"
-export IMAGE="dockjag/fnlp"
+export IMAGE="dockjag/fastnlp"
 export TAG="latest"
 export PYTHON_ENV="development"
 export API_PORT=80
@@ -24,7 +24,7 @@ fi
 
 # docker push ${IMAGE}:${TAG}
 
-docker run -it \
+docker run -d \
   --rm \
   --gpus all \
   -p ${API_PORT}:80 \

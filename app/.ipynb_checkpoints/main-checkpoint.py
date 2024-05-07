@@ -18,6 +18,15 @@ from datetime import datetime
 
 app = FastAPI()
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
+# Device selection
+if torch.cuda.is_available():
+        device = torch.device("cuda")
+elif torch.backends.mps.is_available():
+        device = torch.device("mps")
+else:
+        device = torch.device("cpu")
+
+print("Computing device:",device)
 
 class NERtask:
     def __init__(self, model):
@@ -51,8 +60,8 @@ class NERtask:
         start_time = time.time()
         tokens = self.Tokenize(input)
         vec_tokens, token_positions = self.Vectorize(tokens)
-        results = self.LRModel.predict(vec_tokens[1:-1]) #We remove the CLS and SEP tokens from the predictions
-
+        results = self.LRModel.predict(vec_tokens[1:-1]) #We remove the CLS and SEP tokens from the prediction
+        
         #Map Predictions to their respective positions
         position_label_map = dict()
         for pos, token in zip(token_positions[1:-1], results):
